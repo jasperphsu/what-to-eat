@@ -16,7 +16,7 @@ Everything lives in one file: `index.html`. No build step, no dependencies.
 1. Create a new **public** repo named `what-to-eat` (no personal names — matches the class style).
 2. Upload `index.html` and this `README.md` to the repo root.
 3. Repo **Settings → Pages → Source: Deploy from a branch → main / (root) → Save**.
-4. After ~1 minute your app is live at `https://YOUR-USERNAME.github.io/what-to-eat/`.
+4. After ~1 minute your app is live at `https://jasperphsu.github.io/what-to-eat/`.
 
 > The live camera **requires HTTPS**, which GitHub Pages provides automatically. Opening the file by double-click still works for everything except the live camera (the "upload a photo" button covers that case).
 
