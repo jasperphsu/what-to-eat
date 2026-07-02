@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="What to Eat">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#FAF6EF">
+<meta name="description" content="Never wonder what to cook again — plan today, snap your fridge, get ideas.">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%23FAF6EF'/%3E%3Ctext x='90' y='125' font-size='100' text-anchor='middle'%3E🍽%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='28'%3E🍽%3C/text%3E%3C/svg%3E">
+<title>What to Eat — plan it, snap it, cook it</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;0,9..144,900;1,9..144,400&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   COLORS — edit these to re-theme the whole app.
+   Neutral cream base · black-ish text · ONE pinkish-purple
+   accent · blue + warm buttons.
+   ============================================================ */
+:root{
+  --cream:#FAF6EF;      /* page background */
+  --card:#FFFDF9;       /* card background */
+  --ink:#231F27;        /* main (near-black) text */
+  --muted:#7A7382;      /* soft text */
+  --accent:#A94FA4;     /* pinkish-purple — the brand color */
+  --accent-dk:#87377F;
+  --accent-soft:#F5E7F3;
+  --blue:#4E6FB0;       /* primary action buttons */
+  --blue-dk:#3D5890;
+  --warm:#E8A25C;       /* warm highlight / secondary actions */
+  --warm-soft:#F9E9D4;
+  --line:#EDE4DA;       /* borders */
+  --ok:#4E8A5D;
+  --sh:0 2px 14px rgba(90,60,90,.09);
+  --shl:0 8px 30px rgba(90,60,90,.16);
+  --r:16px; --rsm:10px;
+  --fd:'Fraunces',Georgia,serif;
+  --fb:'DM Sans',system-ui,-apple-system,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+button,a{touch-action:manipulation;font-family:inherit}
+html{scroll-behavior:smooth}
+body{font-family:var(--fb);background:var(--cream);color:var(--ink);min-height:100vh;overflow-x:hidden}
+
+/* ============ LANDING ============ */
+#land{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2rem;position:relative;overflow:hidden}
+.blob{position:absolute;border-radius:50%;pointer-events:none;filter:blur(60px)}
+.b1{width:560px;height:560px;background:rgba(169,79,164,.16);top:-180px;left:-180px}
+.b2{width:400px;height:400px;background:rgba(78,111,176,.14);bottom:-120px;right:-100px}
+.b3{width:250px;height:250px;background:rgba(232,162,92,.18);top:42%;right:6%}
+.land-title{font-family:var(--fd);font-size:clamp(3.6rem,13vw,8.5rem);font-weight:900;line-height:.92;letter-spacing:-.03em;position:relative;z-index:2;margin-bottom:.6rem}
+.w1{color:var(--accent);display:block}
+.w2{color:var(--blue);display:block}
+.w3{color:var(--warm);display:block}
+.land-sub{font-family:var(--fd);font-style:italic;font-size:1.05rem;color:var(--muted);margin-bottom:2.2rem;position:relative;z-index:2}
+.land-btn{position:relative;z-index:2;border:none;background:var(--blue);color:#fff;font-family:var(--fb);font-weight:700;font-size:1.05rem;padding:.95rem 2.6rem;border-radius:40px;cursor:pointer;box-shadow:var(--shl);transition:transform .15s,background .2s}
+.land-btn:hover{background:var(--blue-dk);transform:translateY(-2px)}
+
+/* ============ APP SHELL ============ */
+#app{display:none;min-height:100vh;padding-bottom:84px}
+.nav{background:var(--card);border-bottom:1.5px solid var(--line);height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 1.1rem;position:sticky;top:0;z-index:100}
+.nav-brand{font-family:var(--fd);font-size:1.2rem;font-weight:900;color:var(--accent);cursor:pointer;letter-spacing:-.01em}
+.nav-tabs{display:flex;gap:3px}
+.nt{padding:.36rem .8rem;border-radius:20px;border:none;background:transparent;font-size:.82rem;font-weight:500;color:var(--muted);cursor:pointer;transition:all .15s}
+.nt:hover{background:var(--accent-soft);color:var(--ink)}
+.nt.on{background:var(--accent);color:#fff}
+.gear{border:none;background:transparent;font-size:1.15rem;cursor:pointer;padding:.3rem .45rem;border-radius:10px}
+.gear:hover{background:var(--accent-soft)}
+.wrap{max-width:860px;margin:0 auto;padding:1.5rem 1.15rem}
+.sec{display:none}.sec.on{display:block;animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* bottom nav (mobile) */
+.bnav{position:fixed;bottom:0;left:0;right:0;background:rgba(255,253,249,.95);backdrop-filter:blur(12px);border-top:1.5px solid var(--line);display:none;justify-content:space-around;padding:6px 4px calc(6px + env(safe-area-inset-bottom));z-index:100}
+body.in-app .bnav{display:flex}
+.bnt{flex:1;background:transparent;border:none;display:flex;flex-direction:column;align-items:center;gap:1px;padding:6px 2px;font-weight:600;font-size:.64rem;color:var(--muted);border-radius:12px;cursor:pointer}
+.bnt .ico{font-size:1.3rem;line-height:1.15}
+.bnt.on{color:var(--accent-dk);background:var(--accent-soft)}
+@media(min-width:760px){body.in-app .bnav{display:none}#app{padding-bottom:20px}}
+@media(max-width:759px){.nav-tabs{display:none}}
+
+/* ============ SHARED UI ============ */
+.ph{font-family:var(--fd);font-size:1.75rem;font-weight:700;margin-bottom:.2rem}
+.ps{font-size:.88rem;color:var(--muted);margin-bottom:1.1rem}
+.sec-lbl{font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin:1.3rem 0 .6rem;padding-bottom:.35rem;border-bottom:1.5px solid var(--line)}
+.card{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:1.15rem 1.25rem}
+.btn{border:none;border-radius:30px;padding:.65rem 1.35rem;font-weight:700;font-size:.92rem;background:var(--blue);color:#fff;cursor:pointer;box-shadow:var(--sh);transition:background .2s,transform .1s}
+.btn:hover{background:var(--blue-dk)}
+.btn:active{transform:scale(.97)}
+.btn.warm{background:var(--warm);color:#5C3D1E}
+.btn.warm:hover{background:#DD9245}
+.btn.ghost{background:var(--card);color:var(--blue);border:1.5px solid var(--line);box-shadow:none}
+.btn.ghost:hover{background:var(--accent-soft);color:var(--accent-dk)}
+.btn.sm{padding:.45rem .95rem;font-size:.8rem}
+.chip{display:inline-flex;align-items:center;gap:6px;border-radius:30px;padding:.42rem .85rem;font-size:.84rem;font-weight:600;background:var(--card);border:1.5px solid var(--line);color:var(--ink);cursor:pointer;transition:all .15s;user-select:none}
+.chip:hover{border-color:var(--accent)}
+.chip.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.chip-row{display:flex;flex-wrap:wrap;gap:7px}
+.chipx{border:none;background:transparent;color:inherit;font-size:.95rem;cursor:pointer;padding:0 2px;opacity:.7}
+input[type=text],input[type=time],input[type=password],input[type=search]{padding:.62rem 1rem;border:1.5px solid var(--line);border-radius:30px;font-family:var(--fb);font-size:.9rem;background:var(--card);color:var(--ink);outline:none}
+input:focus{border-color:var(--accent)}
+
+/* ============ TODAY / PLAN ============ */
+.plan-hero{text-align:center;padding:2.2rem 1.4rem}
+.plan-hero .big{font-size:3rem}
+.plan-hero h2{font-family:var(--fd);font-size:1.5rem;margin:.5rem 0 .3rem}
+.plan-hero p{font-size:.88rem;color:var(--muted);margin-bottom:1.2rem}
+.builder{display:none;margin-top:1rem}
+.builder.show{display:block}
+.builder .row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:.7rem}
+.builder input[type=text]{flex:2;min-width:150px}
+.builder input[type=time]{flex:1;min-width:110px}
+.alarm-tog{display:inline-flex;align-items:center;gap:8px;font-size:.85rem;font-weight:600;cursor:pointer;user-select:none}
+.alarm-tog input{width:18px;height:18px;accent-color:var(--accent)}
+.plan-item{display:flex;align-items:center;gap:12px;padding:.8rem .4rem;border-bottom:1.5px solid var(--line)}
+.plan-item:last-child{border-bottom:none}
+.plan-item .tm{font-family:var(--fd);font-weight:700;font-size:1rem;min-width:58px;color:var(--blue)}
+.plan-item .tt{flex:1;font-weight:600}
+.plan-item .tt small{display:block;font-weight:400;color:var(--muted);font-size:.75rem}
+.plan-item.done .tt{text-decoration:line-through;opacity:.5}
+.plan-item.ringing{background:var(--warm-soft);border-radius:var(--rsm);animation:pulse .8s ease infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(232,162,92,.4)}50%{box-shadow:0 0 0 8px rgba(232,162,92,0)}}
+.pi-check{width:24px;height:24px;border-radius:50%;border:2px solid var(--line);background:var(--card);cursor:pointer;flex-shrink:0;font-size:.8rem;color:#fff}
+.plan-item.done .pi-check{background:var(--ok);border-color:var(--ok)}
+.pi-del{border:none;background:transparent;color:var(--muted);font-size:1.05rem;cursor:pointer;padding:2px 6px}
+
+/* ============ SNAP (camera) ============ */
+.cam-stage{position:relative;border-radius:var(--r);overflow:hidden;background:#141017;aspect-ratio:3/4;max-height:480px;box-shadow:var(--shl)}
+@media(min-width:600px){.cam-stage{aspect-ratio:4/3;max-height:420px}}
+.cam-stage video,.cam-stage img{width:100%;height:100%;object-fit:cover;display:block}
+.cam-stage video.mirror{transform:scaleX(-1)}
+.cam-off{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.9rem;color:#EFE7F0;text-align:center;padding:1.4rem}
+.cam-off .big{font-size:2.6rem}
+.cam-controls{position:absolute;bottom:0;left:0;right:0;display:flex;align-items:center;justify-content:center;gap:2.2rem;padding:1rem;background:linear-gradient(transparent,rgba(0,0,0,.45))}
+.shutter{width:64px;height:64px;border-radius:50%;border:4px solid #fff;background:var(--warm);cursor:pointer;box-shadow:0 3px 14px rgba(0,0,0,.35);transition:transform .1s}
+.shutter:active{transform:scale(.9)}
+.flip{width:44px;height:44px;border-radius:50%;border:none;background:rgba(255,255,255,.22);color:#fff;font-size:1.2rem;cursor:pointer;backdrop-filter:blur(6px)}
+.scan-status{display:none;align-items:center;gap:10px;margin-top:.9rem;font-size:.88rem;font-weight:600;color:var(--accent-dk)}
+.scan-status.show{display:flex}
+.spinner{width:18px;height:18px;border:3px solid var(--accent-soft);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ============ RECIPES GRID ============ */
+.search-row{display:flex;gap:8px;margin-bottom:1rem}
+.search-row input{flex:1}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+@media(min-width:620px){.grid{grid-template-columns:repeat(3,1fr)}}
+.recipe{background:var(--card);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh);cursor:pointer;transition:transform .12s,box-shadow .2s}
+.recipe:hover{transform:translateY(-3px);box-shadow:var(--shl)}
+.recipe .thumb{height:92px;display:grid;place-items:center;font-size:2.9rem;background:linear-gradient(145deg,var(--warm-soft),var(--accent-soft))}
+.recipe .body{padding:.75rem .85rem}
+.recipe h3{font-size:.92rem;font-family:var(--fd)}
+.recipe .meta{display:flex;gap:7px;font-size:.72rem;color:var(--muted);margin-top:5px;flex-wrap:wrap;align-items:center}
+.badge{font-size:.66rem;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--accent-soft);color:var(--accent-dk)}
+
+/* mini result rows (ask / snap suggestions) */
+.mini-list{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:4px 14px}
+.mini{display:flex;align-items:center;gap:12px;padding:.7rem 0;border-bottom:1.5px solid var(--line);cursor:pointer}
+.mini:last-child{border-bottom:none}
+.mini .e{font-size:1.6rem}
+.mini .t{flex:1;font-weight:600;font-size:.92rem}
+.mini .m{font-size:.74rem;color:var(--muted);font-weight:400}
+
+/* ============ ASK ============ */
+.speech{display:flex;gap:12px;align-items:flex-start;margin-bottom:1rem}
+.speech .avatar{width:44px;height:44px;border-radius:14px;flex-shrink:0;background:linear-gradient(150deg,var(--accent),var(--warm));display:grid;place-items:center;font-size:1.4rem;box-shadow:var(--sh)}
+.speech .bubble{background:var(--card);border-radius:var(--r);padding:.75rem 1rem;box-shadow:var(--sh);font-size:.92rem}
+.ask-row{display:flex;gap:8px;margin-top:.6rem}
+.ask-row input{flex:1}
+
+/* ============ FAMILY ============ */
+.people{display:grid;grid-template-columns:1fr;gap:13px}
+@media(min-width:620px){.people{grid-template-columns:1fr 1fr}}
+.person{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:1rem 1.1rem;cursor:pointer}
+.person .top{display:flex;gap:12px;align-items:center}
+.avatar-lg{width:48px;height:48px;border-radius:50%;background:linear-gradient(150deg,var(--warm-soft),var(--accent-soft));display:grid;place-items:center;font-size:1.5rem;flex-shrink:0}
+.person h3{font-family:var(--fd);font-size:1rem}
+.person .desc{font-size:.8rem;color:var(--muted)}
+.person .tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:.6rem}
+.person .tags span{font-size:.66rem;background:var(--accent-soft);color:var(--accent-dk);padding:2px 8px;border-radius:20px;font-weight:700}
+.person .picks{display:none;margin-top:.7rem;padding-top:.5rem;border-top:1.5px dashed var(--line)}
+.person.open .picks{display:block}
+.person .hint{font-size:.72rem;color:var(--muted);font-style:italic;text-align:center;margin-top:.55rem}
+
+/* ============ MODALS ============ */
+.modal-back{position:fixed;inset:0;background:rgba(35,31,39,.55);display:none;align-items:center;justify-content:center;padding:18px;z-index:200;backdrop-filter:blur(4px)}
+.modal-back.show{display:flex}
+.modal{background:var(--card);border-radius:22px;max-width:430px;width:100%;max-height:88vh;overflow:auto;box-shadow:var(--shl);animation:pop .28s ease;position:relative}
+@keyframes pop{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:none}}
+.modal .m-hero{padding:1.6rem 1.4rem 1.2rem;text-align:center;background:linear-gradient(145deg,var(--warm-soft),var(--accent-soft));border-radius:22px 22px 0 0}
+.modal .m-hero .emoji{font-size:3.4rem}
+.modal .m-hero h2{font-family:var(--fd);margin:.4rem 0 .15rem}
+.modal .m-body{padding:1.2rem 1.4rem}
+.modal .m-body h4{margin:.85rem 0 .35rem;color:var(--accent-dk);font-size:.85rem}
+.modal .m-body ul{margin:0;padding-left:20px;font-size:.9rem}
+.m-close{position:absolute;top:12px;right:14px;background:rgba(255,255,255,.85);border:none;border-radius:50%;width:34px;height:34px;font-size:1rem;cursor:pointer;z-index:2}
+
+/* spin wheel */
+.wheel-box{position:relative;width:min(280px,74vw);aspect-ratio:1;margin:0 auto 1.1rem}
+.wheel-box svg{width:100%;height:100%;filter:drop-shadow(0 10px 22px rgba(90,60,90,.28));transition:transform 3s cubic-bezier(.15,.85,.25,1)}
+.wheel-box .pin{position:absolute;top:-8px;left:50%;transform:translateX(-50%);font-size:1.7rem;z-index:2;filter:drop-shadow(0 2px 3px rgba(0,0,0,.3))}
+.wheel-box .hub{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:52px;height:52px;border-radius:50%;background:var(--card);box-shadow:var(--sh);display:grid;place-items:center;font-size:1.3rem;z-index:1}
+#wheelResult{display:none;margin-top:.4rem}
+#wheelResult.show{display:block;animation:pop .35s ease}
+
+/* toast */
+#toast{position:fixed;bottom:96px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:.6rem 1.2rem;border-radius:30px;font-size:.85rem;font-weight:600;opacity:0;pointer-events:none;transition:all .3s;z-index:300;max-width:88vw;text-align:center}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+footer{text-align:center;margin:2.2rem 0 1rem;color:var(--muted);font-size:.75rem}
+</style>
+</head>
+<body>
+
+<!-- ================= LANDING ================= -->
+<div id="land">
+  <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+  <h1 class="land-title"><span class="w1">What</span><span class="w2">to</span><span class="w3">Eat</span></h1>
+  <p class="land-sub">plan it · snap it · cook it 🍽️</p>
+  <button class="land-btn" onclick="startApp()">Let's eat →</button>
+</div>
+
+<!-- ================= APP ================= -->
+<div id="app">
+  <nav class="nav">
+    <div class="nav-brand" onclick="goLand()">What to Eat</div>
+    <div class="nav-tabs">
+      <button class="nt on" id="nt-today"   onclick="gt('today')">🗓️ Today</button>
+      <button class="nt" id="nt-snap"       onclick="gt('snap')">📸 Snap</button>
+      <button class="nt" id="nt-ask"        onclick="gt('ask')">💬 Ask</button>
+      <button class="nt" id="nt-recipes"    onclick="gt('recipes')">📖 Recipes</button>
+      <button class="nt" id="nt-family"     onclick="gt('family')">👨‍👩‍👧 Family</button>
+    </div>
+    <button class="gear" onclick="openSettings()" title="Settings">⚙️</button>
+  </nav>
+
+  <div class="wrap">
+
+    <!-- ========== TAB: TODAY ========== -->
+    <section class="sec on" id="sec-today">
+      <div class="ph">Today's plan</div>
+      <div class="ps" id="today-date"></div>
+
+      <!-- empty state -->
+      <div class="card plan-hero" id="plan-empty">
+        <div class="big">🍽️</div>
+        <h2>Build today's plan</h2>
+        <p>Add your meals and cooking times — we'll ring you when it's time.</p>
+        <button class="btn" onclick="toggleBuilder(true)">＋ Start building</button>
+        <button class="btn warm" onclick="openWheel()" style="margin-left:6px">🎡 Spin for an idea</button>
+      </div>
+
+      <!-- plan list -->
+      <div class="card" id="plan-card" style="display:none">
+        <div id="plan-list"></div>
+        <div style="display:flex;gap:8px;margin-top:.9rem;flex-wrap:wrap">
+          <button class="btn sm" onclick="toggleBuilder(true)">＋ Add another</button>
+          <button class="btn sm warm" onclick="openWheel()">🎡 Spin</button>
+        </div>
+      </div>
+
+      <!-- builder form -->
+      <div class="card builder" id="builder">
+        <div class="sec-lbl" style="margin-top:0">Add to today's plan</div>
+        <div class="row">
+          <input type="text" id="b-title" placeholder="What are you making? (e.g. 🍜 Soup for dinner)">
+          <input type="time" id="b-time">
+        </div>
+        <div class="row" style="align-items:center;justify-content:space-between">
+          <label class="alarm-tog"><input type="checkbox" id="b-alarm" checked> 🔔 Ring me when it's time</label>
+          <div>
+            <button class="btn ghost sm" onclick="toggleBuilder(false)">Cancel</button>
+            <button class="btn sm" onclick="addPlanItem()">Add ✓</button>
+          </div>
+        </div>
+        <p style="font-size:.75rem;color:var(--muted)">Tip: can't decide what to make? Try <b>🎡 Spin</b>, <b>📸 Snap</b> your fridge, or <b>💬 Ask</b>.</p>
+      </div>
+    </section>
+
+    <!-- ========== TAB: SNAP ========== -->
+    <section class="sec" id="sec-snap">
+      <div class="ph">Snap your fridge</div>
+      <div class="ps">Point the camera at your ingredients — AI figures out what you can make.</div>
+
+      <div class="cam-stage" id="cam-stage">
+        <video id="cam-video" autoplay playsinline muted style="display:none"></video>
+        <img id="cam-photo" alt="" style="display:none">
+        <div class="cam-off" id="cam-off">
+          <div class="big">📸</div>
+          <div style="font-weight:700">Camera is off</div>
+          <div style="font-size:.82rem;opacity:.8">Works on iPhone &amp; iPad — allow camera access when asked.</div>
+          <button class="btn warm" onclick="startCam()">Enable camera</button>
+          <label class="btn ghost sm" style="color:#EFE7F0;border-color:rgba(255,255,255,.4);background:transparent">
+            or upload a photo <input type="file" accept="image/*" capture="environment" onchange="onPhotoFile(event)" style="display:none">
+          </label>
+        </div>
+        <div class="cam-controls" id="cam-controls" style="display:none">
+          <button class="flip" onclick="flipCam()" title="Flip camera">🔄</button>
+          <button class="shutter" onclick="snapPhoto()" title="Take photo"></button>
+          <button class="flip" onclick="stopCam()" title="Close camera">✕</button>
+        </div>
+        <div class="cam-controls" id="review-controls" style="display:none">
+          <button class="btn ghost sm" style="background:rgba(255,255,255,.9)" onclick="retakePhoto()">↺ Retake</button>
+          <button class="btn warm sm" onclick="scanPhoto()">✨ Find ingredients</button>
+        </div>
+      </div>
+
+      <div class="scan-status" id="scan-status"><div class="spinner"></div><span>Claude is looking at your photo…</span></div>
+
+      <div class="sec-lbl">🧺 Your ingredients</div>
+      <div class="chip-row" id="fridge-chips"></div>
+      <div class="ask-row">
+        <input type="text" id="fridge-in" placeholder="Add one by hand… (e.g. eggs)" onkeydown="if(event.key==='Enter')addFridge()">
+        <button class="btn sm" onclick="addFridge()">Add</button>
+      </div>
+      <div style="margin-top:1rem;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn" onclick="snapIdeas()">🍳 What can I make?</button>
+        <button class="btn ghost sm" onclick="clearFridge()">Clear all</button>
+      </div>
+      <div id="snap-results" style="margin-top:1rem"></div>
+    </section>
+
+    <!-- ========== TAB: ASK ========== -->
+    <section class="sec" id="sec-ask">
+      <div class="ph">Ask Whisky</div>
+      <div class="ps">Tell our little helper how you feel — get the perfect match.</div>
+
+      <div class="speech">
+        <div class="avatar">🥣</div>
+        <div class="bubble" id="whisky-reply">Hi! I'm Whisky. Tap how you're feeling, mark any allergies, or just tell me what you're craving.</div>
+      </div>
+
+      <div class="sec-lbl">How are you feeling?</div>
+      <div class="chip-row" id="mood-row"></div>
+
+      <div class="sec-lbl">🚫 Anything you can't have?</div>
+      <div class="chip-row" id="allergy-row"></div>
+
+      <div class="sec-lbl">Or tell me what you want</div>
+      <div class="ask-row">
+        <input type="text" id="ask-in" placeholder="Like: something sweet and quick…" onkeydown="if(event.key==='Enter')runAsk()">
+        <button class="btn sm" onclick="runAsk()">Ask</button>
+      </div>
+      <div id="ask-results" style="margin-top:1rem"></div>
+    </section>
+
+    <!-- ========== TAB: RECIPES ========== -->
+    <section class="sec" id="sec-recipes">
+      <div class="ph">Recipes</div>
+      <div class="ps">Browse everything — or search by ingredient.</div>
+      <div class="search-row">
+        <input type="search" id="recipe-search" placeholder="🔍 Search by ingredient… (e.g. chocolate, cheese)" oninput="renderRecipes()">
+      </div>
+      <div class="grid" id="recipe-grid"></div>
+    </section>
+
+    <!-- ========== TAB: FAMILY ========== -->
+    <section class="sec" id="sec-family">
+      <div class="ph">Family</div>
+      <div class="ps">Cooking for someone? Tap a card to see their perfect picks.</div>
+      <div class="people" id="people-grid"></div>
+    </section>
+
+    <footer>What to Eat 🍽️ · made with 💜 in App Architects</footer>
+  </div>
+</div>
+
+<!-- bottom nav (mobile) -->
+<nav class="bnav" id="bnav">
+  <button class="bnt on" id="bnt-today"   onclick="gt('today')"><span class="ico">🗓️</span>Today</button>
+  <button class="bnt" id="bnt-snap"       onclick="gt('snap')"><span class="ico">📸</span>Snap</button>
+  <button class="bnt" id="bnt-ask"        onclick="gt('ask')"><span class="ico">💬</span>Ask</button>
+  <button class="bnt" id="bnt-recipes"    onclick="gt('recipes')"><span class="ico">📖</span>Recipes</button>
+  <button class="bnt" id="bnt-family"     onclick="gt('family')"><span class="ico">👨‍👩‍👧</span>Family</button>
+</nav>
+
+<!-- ========== MODAL: recipe detail ========== -->
+<div class="modal-back" id="recipe-modal">
+  <div class="modal">
+    <button class="m-close" onclick="closeModal('recipe-modal')">✕</button>
+    <div class="m-hero">
+      <div class="emoji" id="rm-emoji">🍪</div>
+      <h2 id="rm-title"></h2>
+      <div style="font-size:.82rem;color:var(--muted)" id="rm-meta"></div>
+    </div>
+    <div class="m-body">
+      <div id="rm-why" style="color:var(--accent-dk);font-weight:700;font-size:.88rem"></div>
+      <h4>You'll need</h4>
+      <ul id="rm-ings"></ul>
+      <h4>Tags</h4>
+      <div class="chip-row" id="rm-tags" style="pointer-events:none"></div>
+      <div style="margin-top:1.1rem;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn" onclick="addRecipeToPlan()">➕ Add to today's plan</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== MODAL: spin wheel ========== -->
+<div class="modal-back" id="wheel-modal">
+  <div class="modal" style="text-align:center;padding-bottom:1.2rem">
+    <button class="m-close" onclick="closeModal('wheel-modal')">✕</button>
+    <div class="m-body">
+      <h2 style="font-family:var(--fd);margin-bottom:.2rem">Can't decide? 🎡</h2>
+      <p style="font-size:.83rem;color:var(--muted);margin-bottom:1rem">Spin the wheel — it respects your mood &amp; allergies from the Ask tab.</p>
+      <div class="wheel-box">
+        <div class="pin">🔻</div>
+        <svg id="wheel" viewBox="-100 -100 200 200"></svg>
+        <div class="hub">🍽️</div>
+      </div>
+      <button class="btn warm" id="spin-btn" onclick="spinWheel()">Spin the wheel!</button>
+      <div id="wheelResult">
+        <div style="font-size:2.4rem" id="wr-emoji"></div>
+        <div style="font-family:var(--fd);font-weight:700;font-size:1.15rem" id="wr-title"></div>
+        <div style="font-size:.8rem;color:var(--muted);margin-bottom:.6rem" id="wr-meta"></div>
+        <button class="btn sm" onclick="wheelToPlan()">➕ Add to plan</button>
+        <button class="btn ghost sm" onclick="wheelDetails()">See recipe</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== MODAL: settings / API key ========== -->
+<div class="modal-back" id="settings-modal">
+  <div class="modal">
+    <button class="m-close" onclick="closeModal('settings-modal')">✕</button>
+    <div class="m-body" style="padding-top:1.6rem">
+      <h2 style="font-family:var(--fd);margin-bottom:.3rem">⚙️ Settings</h2>
+      <h4>Claude API key</h4>
+      <p style="font-size:.8rem;color:var(--muted);margin-bottom:.6rem">
+        Powers the 📸 ingredient scanner. The key is saved <b>only in this browser</b> — it never goes into the code or GitHub.
+      </p>
+      <input type="password" id="key-in" placeholder="sk-ant-…" style="width:100%">
+      <div style="display:flex;gap:8px;margin-top:.7rem">
+        <button class="btn sm" onclick="saveKey()">Save key</button>
+        <button class="btn ghost sm" onclick="clearKey()">Remove</button>
+      </div>
+      <p id="key-status" style="font-size:.78rem;margin-top:.6rem;color:var(--muted)"></p>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ============================================================
+   WHAT TO EAT — single-file app
+   Sections: data → state → helpers → tabs → today/plan+alarms
+   → camera+AI → ask → recipes → family → wheel → settings
+   ============================================================ */
+
+/* ─── RECIPE DATA ───
+   Add new recipes here! Same shape = it appears everywhere
+   (recipes grid, wheel, suggestions). Future idea: group them
+   into "collections" by adding a collection:'desserts' field. */
+const RECIPES=[
+ {id:'cookies', title:'Chocolate Chip Cookies',emoji:'🍪',kind:'bake',mins:35,moods:['happy','cozy','sad'],      temp:'warm',   allergens:['gluten','dairy','egg'],ingredients:['flour','butter','sugar','eggs','chocolate chips'],tags:['sweet','dessert','snack','kids']},
+ {id:'icecream',title:'No-Churn Ice Cream',    emoji:'🍦',kind:'bake',mins:15,moods:['happy','sad','excited'],   temp:'cold',   allergens:['dairy'],               ingredients:['cream','sugar','vanilla'],tags:['sweet','dessert','cold','kids']},
+ {id:'soup',    title:'Cozy Chicken Soup',     emoji:'🍜',kind:'cook',mins:45,moods:['cozy','tired','stressed','sad'],temp:'warm',allergens:['gluten'],            ingredients:['chicken','carrots','onion','noodles'],tags:['savory','dinner','comfort']},
+ {id:'pasta',   title:'Creamy Tomato Pasta',   emoji:'🍝',kind:'cook',mins:25,moods:['cozy','tired','stressed'], temp:'warm',   allergens:['gluten','dairy'],      ingredients:['pasta','tomatoes','cream','garlic'],tags:['savory','dinner','comfort','quick','italian']},
+ {id:'salad',   title:'Watermelon Feta Salad', emoji:'🍉',kind:'cook',mins:10,moods:['healthy','happy'],         temp:'cold',   allergens:['dairy'],               ingredients:['watermelon','feta','mint','lime'],tags:['fresh','healthy','light','cold']},
+ {id:'cake',    title:'Celebration Cake',      emoji:'🎂',kind:'bake',mins:75,moods:['happy','excited'],         temp:'neutral',allergens:['gluten','dairy','egg'],ingredients:['flour','sugar','butter','eggs','milk'],tags:['sweet','dessert','birthday','party']},
+ {id:'banana',  title:'Banana Bread',          emoji:'🍌',kind:'bake',mins:65,moods:['cozy','healthy','stressed'],temp:'warm',  allergens:['gluten'],              ingredients:['bananas','flour','sugar','oil'],tags:['sweet','snack','breakfast','comfort']},
+ {id:'smoothie',title:'Berry Smoothie Bowl',   emoji:'🍧',kind:'cook',mins:10,moods:['healthy','happy','tired'], temp:'cold',   allergens:['dairy'],               ingredients:['berries','banana','yogurt','granola'],tags:['sweet','healthy','breakfast','cold','quick']},
+ {id:'grilled', title:'Grilled Cheese',        emoji:'🥪',kind:'cook',mins:15,moods:['cozy','tired','sad'],      temp:'warm',   allergens:['gluten','dairy'],      ingredients:['bread','cheese','butter'],tags:['savory','comfort','quick','snack','kids']},
+ {id:'brownies',title:'Fudgy Brownies',        emoji:'🍫',kind:'bake',mins:40,moods:['happy','cozy','sad'],      temp:'neutral',allergens:['gluten','dairy','egg'],ingredients:['chocolate','butter','sugar','eggs','flour'],tags:['sweet','dessert','chocolate']},
+ {id:'pancakes',title:'Fluffy Pancakes',       emoji:'🥞',kind:'cook',mins:20,moods:['happy','cozy','excited'],  temp:'warm',   allergens:['gluten','dairy','egg'],ingredients:['flour','milk','eggs','syrup'],tags:['sweet','breakfast','quick','kids']},
+ {id:'pizza',   title:'Homemade Pizza',        emoji:'🍕',kind:'cook',mins:40,moods:['happy','excited'],         temp:'warm',   allergens:['gluten','dairy'],      ingredients:['dough','tomatoes','cheese','basil'],tags:['savory','dinner','party','italian','kids']},
+ {id:'tacos',   title:'Bean & Cheese Tacos',   emoji:'🌮',kind:'cook',mins:20,moods:['excited','adventurous','happy'],temp:'neutral',allergens:['gluten','dairy'],ingredients:['tortillas','beans','cheese','salsa'],tags:['savory','dinner','quick','spicy','mexican']},
+ {id:'stirfry', title:'Veggie Stir-Fry',       emoji:'🥦',kind:'cook',mins:20,moods:['healthy','adventurous','tired'],temp:'neutral',allergens:['soy'],           ingredients:['broccoli','carrots','rice','soy sauce'],tags:['savory','healthy','dinner','quick']},
+];
+RECIPES.forEach(r=>r.search=[r.title,...r.tags,...r.ingredients].join(' ').toLowerCase());
+
+/* ─── FAMILY — edit these cards! ─── */
+const PEOPLE=[
+ {name:'Mom',    emoji:'👩',desc:'Loves Italian comfort food. Allergic to nuts.',likes:['italian','pasta','comfort','savory'],avoid:['nuts']},
+ {name:'Dad',    emoji:'👨',desc:'Big fan of hearty, cheesy dinners.',           likes:['pizza','dinner','cheese'],           avoid:[]},
+ {name:'Grandma',emoji:'👵',desc:'Enjoys cozy home-baked treats. Avoids dairy.', likes:['sweet','comfort','banana','bake'],   avoid:['dairy']},
+ {name:'Theo',   emoji:'🧒',desc:'Picky kid — loves anything sweet or cheesy.',  likes:['sweet','cheese','kids','snack'],     avoid:[]},
+];
+
+/* ─── MOODS (more emotions!) + ALLERGENS ─── */
+const MOODS=[
+ ['happy','😄 Happy'],['cozy','🫖 Cozy'],['tired','😴 Tired'],['healthy','🥗 Healthy'],
+ ['stressed','😮‍💨 Stressed'],['sad','🥺 Sad'],['excited','🎉 Excited'],['adventurous','🌶️ Adventurous'],
+];
+const ALLERGENS=['gluten','dairy','egg','nuts','soy'];
+
+/* ─── STATE (saved in this browser) ─── */
+const DEF={fridge:[],mood:null,allergies:[],plan:{date:'',items:[]}};
+let S={...DEF};
+try{const d=localStorage.getItem('wte');if(d)S={...DEF,...JSON.parse(d)};}catch(e){}
+const save=()=>{try{localStorage.setItem('wte',JSON.stringify(S));}catch(e){}};
+const todayStr=()=>new Date().toISOString().slice(0,10);
+
+/* ─── LITTLE HELPERS ─── */
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),2600);}
+function closeModal(id){document.getElementById(id).classList.remove('show');}
+function openModalId(id){document.getElementById(id).classList.add('show');}
+document.querySelectorAll('.modal-back').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('show');}));
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* ─── THE BRAIN — score recipes for any situation ───
+   +25 mood match · +18 hot/cold match · +11 craving keyword
+   +10 per fridge ingredient used · allergy = never shown  */
+function score(r,opts={}){
+  const avoid=[...new Set([...(opts.avoid||[]),...S.allergies])];
+  if(avoid.some(a=>r.allergens.includes(a)))return -Infinity;
+  let sc=0;
+  const mood=opts.mood!==undefined?opts.mood:S.mood;
+  if(mood&&r.moods.includes(mood))sc+=25;
+  if(opts.wantTemp&&r.temp===opts.wantTemp)sc+=18;
+  (opts.keywords||[]).forEach(k=>{if(r.search.includes(k))sc+=11;});
+  (opts.likes||[]).forEach(k=>{if(r.search.includes(k))sc+=11;});
+  (opts.ingredients||[]).forEach(ing=>{
+    const n=ing.toLowerCase();
+    if(r.ingredients.some(x=>x.includes(n)||n.includes(x)))sc+=10;
+  });
+  return sc+Math.random()*2; // tiny shuffle so ties feel fresh
+}
+function rank(opts={}){return RECIPES.map(r=>({r,s:score(r,opts)})).filter(x=>x.s>-Infinity).sort((a,b)=>b.s-a.s);}
+
+/* Understand a typed wish like "something cold and sweet" */
+function parseWish(text){
+  const t=' '+text.toLowerCase()+' ';
+  const o={keywords:[],wantTemp:null};const found=[];
+  if(/(cold|cool|refreshing|ice|frozen|hot day|summer)/.test(t)){o.wantTemp='cold';found.push('something cool');}
+  else if(/(warm|cozy|comfort|winter|cold day)/.test(t)){o.wantTemp='warm';found.push('something warm');}
+  if(/(sweet|dessert|treat)/.test(t)){o.keywords.push('sweet');found.push('sweet');}
+  if(/(quick|fast|easy|hurry)/.test(t)){o.keywords.push('quick');found.push('quick');}
+  if(/(healthy|light|fresh)/.test(t)){o.keywords.push('healthy');found.push('healthy');}
+  if(/(party|friends|birthday)/.test(t)){o.keywords.push('party');found.push('party');}
+  if(/(spicy|hot sauce)/.test(t)){o.keywords.push('spicy');found.push('spicy');}
+  ['chocolate','pasta','pizza','soup','salad','cheese','banana','berries','taco','rice','bread','egg'].forEach(k=>{if(t.includes(k)){o.keywords.push(k);found.push(k);}});
+  const reply=found.length?`Ooh — ${[...new Set(found)].slice(0,3).join(', ')}. I've got ideas! 💜`:`Let me find something yummy for you!`;
+  return{o,reply};
+}
+
+/* ─── NAVIGATION ─── */
+function startApp(){
+  document.getElementById('land').style.display='none';
+  document.getElementById('app').style.display='block';
+  document.body.classList.add('in-app');
+  renderToday();renderMoods();renderAllergies();renderRecipes();renderFamily();renderFridge();
+}
+function goLand(){
+  document.getElementById('app').style.display='none';
+  document.body.classList.remove('in-app');
+  document.getElementById('land').style.display='flex';
+}
+function gt(t){
+  ['today','snap','ask','recipes','family'].forEach(x=>{
+    document.getElementById('nt-'+x).classList.toggle('on',x===t);
+    document.getElementById('bnt-'+x).classList.toggle('on',x===t);
+    document.getElementById('sec-'+x).classList.toggle('on',x===t);
+  });
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ============================================================
+   TODAY'S PLAN — events with times + ringing alarms
+   ============================================================ */
+function freshPlanIfNewDay(){
+  if(S.plan.date!==todayStr()){S.plan={date:todayStr(),items:[]};save();}
+}
+function renderToday(){
+  freshPlanIfNewDay();
+  const d=new Date();
+  document.getElementById('today-date').textContent=d.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'});
+  const has=S.plan.items.length>0;
+  document.getElementById('plan-empty').style.display=has?'none':'block';
+  document.getElementById('plan-card').style.display=has?'block':'none';
+  if(!has)return;
+  const list=document.getElementById('plan-list');
+  const items=[...S.plan.items].sort((a,b)=>a.time.localeCompare(b.time));
+  list.innerHTML=items.map(it=>`
+    <div class="plan-item ${it.done?'done':''} ${it.ringing?'ringing':''}" id="pi-${it.id}">
+      <button class="pi-check" onclick="togglePlanDone('${it.id}')">${it.done?'✓':''}</button>
+      <div class="tm">${esc(fmtTime(it.time))}</div>
+      <div class="tt">${esc(it.title)}${it.alarm?` <small>🔔 alarm ${it.fired?'rang':'set'}</small>`:''}</div>
+      <button class="pi-del" onclick="delPlanItem('${it.id}')">✕</button>
+    </div>`).join('');
+}
+function fmtTime(t){ // "18:30" → "6:30 PM"
+  const[h,m]=t.split(':').map(Number);
+  const ap=h>=12?'PM':'AM';const hh=h%12||12;
+  return hh+':'+String(m).padStart(2,'0')+' '+ap;
+}
+function toggleBuilder(show){
+  document.getElementById('builder').classList.toggle('show',show);
+  if(show){
+    unlockAudio();
+    if(!document.getElementById('b-time').value){
+      const n=new Date();n.setMinutes(n.getMinutes()+30);
+      document.getElementById('b-time').value=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');
+    }
+    document.getElementById('b-title').focus();
+  }
+}
+function addPlanItem(){
+  freshPlanIfNewDay();
+  const title=document.getElementById('b-title').value.trim();
+  const time=document.getElementById('b-time').value;
+  if(!title){toast('Give it a name first! 🍳');return;}
+  if(!time){toast('Pick a time ⏰');return;}
+  S.plan.items.push({id:'p'+Date.now(),title,time,alarm:document.getElementById('b-alarm').checked,fired:false,done:false,recipeId:pendingRecipeId||null});
+  pendingRecipeId=null;
+  save();
+  document.getElementById('b-title').value='';
+  toggleBuilder(false);renderToday();
+  toast('Added to today\'s plan ✓');
+}
+function delPlanItem(id){S.plan.items=S.plan.items.filter(x=>x.id!==id);save();renderToday();}
+function togglePlanDone(id){const it=S.plan.items.find(x=>x.id===id);if(it){it.done=!it.done;save();renderToday();}}
+
+/* ── ALARMS: check every 10s; ring + vibrate when an item is due ── */
+let audioCtx=null;
+function unlockAudio(){ // browsers only allow sound after a user tap
+  if(!audioCtx){try{audioCtx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}}
+  if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume();
+}
+document.addEventListener('pointerdown',unlockAudio,{once:true});
+function ringBell(){
+  if(navigator.vibrate)navigator.vibrate([300,120,300,120,500]); // buzzes on Android; iPhones don't allow web vibration
+  if(!audioCtx)return;
+  const notes=[880,1108,880,1108,880,1318];
+  notes.forEach((f,i)=>{
+    const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+    o.type='sine';o.frequency.value=f;
+    g.gain.setValueAtTime(.001,audioCtx.currentTime+i*.35);
+    g.gain.exponentialRampToValueAtTime(.28,audioCtx.currentTime+i*.35+.04);
+    g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+i*.35+.32);
+    o.connect(g);g.connect(audioCtx.destination);
+    o.start(audioCtx.currentTime+i*.35);o.stop(audioCtx.currentTime+i*.35+.34);
+  });
+}
+function checkAlarms(){
+  if(S.plan.date!==todayStr())return;
+  const n=new Date();const cur=n.getHours()*60+n.getMinutes();
+  let rang=false;
+  S.plan.items.forEach(it=>{
+    if(!it.alarm||it.fired||it.done)return;
+    const[h,m]=it.time.split(':').map(Number);
+    if(cur>=h*60+m){
+      it.fired=true;it.ringing=true;rang=true;
+      ringBell();
+      toast('🔔 Time to make: '+it.title);
+      setTimeout(()=>{it.ringing=false;renderToday();},6000);
+    }
+  });
+  if(rang){save();renderToday();}
+}
+setInterval(checkAlarms,10000);
+
+/* used by "Add to plan" buttons on recipes / wheel */
+let pendingRecipeId=null;
+function prefillPlan(recipe){
+  pendingRecipeId=recipe.id;
+  gt('today');
+  toggleBuilder(true);
+  document.getElementById('b-title').value=recipe.emoji+' '+recipe.title;
+}
+
+/* ============================================================
+   SNAP — live camera (iPhone/iPad friendly) + Claude vision
+   ============================================================ */
+let camStream=null,facing='environment',lastPhoto=null;
+const vidEl=()=>document.getElementById('cam-video');
+
+async function startCam(){
+  unlockAudio();
+  try{
+    if(camStream)camStream.getTracks().forEach(t=>t.stop());
+    camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:facing,width:{ideal:1280},height:{ideal:960}},audio:false});
+    const v=vidEl();
+    v.srcObject=camStream;v.style.display='block';
+    v.classList.toggle('mirror',facing==='user');
+    await v.play();
+    document.getElementById('cam-off').style.display='none';
+    document.getElementById('cam-photo').style.display='none';
+    document.getElementById('review-controls').style.display='none';
+    document.getElementById('cam-controls').style.display='flex';
+  }catch(e){
+    const msg=e.name==='NotAllowedError'
+      ?'Camera access was denied. Allow it in Settings → Safari → Camera, then try again.'
+      :(location.protocol==='file:'?'Live camera needs the app to run from a website (https). Use "upload a photo" instead, or open the GitHub Pages link.':'Could not start camera: '+e.message);
+    toast(msg);
+  }
+}
+async function flipCam(){
+  facing=facing==='user'?'environment':'user';
+  try{await startCam();}catch(e){facing=facing==='user'?'environment':'user';}
+}
+function stopCam(){
+  if(camStream)camStream.getTracks().forEach(t=>t.stop());
+  camStream=null;
+  vidEl().style.display='none';
+  document.getElementById('cam-controls').style.display='none';
+  document.getElementById('review-controls').style.display='none';
+  document.getElementById('cam-photo').style.display='none';
+  document.getElementById('cam-off').style.display='flex';
+}
+function snapPhoto(){
+  const v=vidEl();
+  const w=v.videoWidth||1280,h=v.videoHeight||960;
+  const c=document.createElement('canvas');c.width=w;c.height=h;
+  const ctx=c.getContext('2d');
+  if(facing==='user'){ctx.scale(-1,1);ctx.drawImage(v,-w,0,w,h);}else{ctx.drawImage(v,0,0,w,h);}
+  lastPhoto=c.toDataURL('image/jpeg',.85);
+  const img=document.getElementById('cam-photo');
+  img.src=lastPhoto;img.style.display='block';
+  v.style.display='none';
+  document.getElementById('cam-controls').style.display='none';
+  document.getElementById('review-controls').style.display='flex';
+}
+function retakePhoto(){
+  lastPhoto=null;
+  document.getElementById('cam-photo').style.display='none';
+  if(camStream){vidEl().style.display='block';document.getElementById('cam-controls').style.display='flex';}
+  else document.getElementById('cam-off').style.display='flex';
+  document.getElementById('review-controls').style.display='none';
+}
+/* fallback: pick/take a photo with the native picker (always works) */
+function onPhotoFile(e){
+  const f=e.target.files[0];if(!f)return;
+  const rd=new FileReader();
+  rd.onload=ev=>{
+    lastPhoto=ev.target.result;
+    document.getElementById('cam-off').style.display='none';
+    const img=document.getElementById('cam-photo');
+    img.src=lastPhoto;img.style.display='block';
+    document.getElementById('review-controls').style.display='flex';
+    scanPhoto();
+  };
+  rd.readAsDataURL(f);
+}
+
+/* ── Claude API — the shared caller ──
+   The key lives ONLY in this browser (⚙️ Settings). The special
+   "dangerous-direct-browser-access" header is what lets a web page
+   call Claude directly without a server. */
+async function claude(body){
+  const key=(localStorage.getItem('wte_key')||'').trim();
+  if(!key)throw new Error('no-key');
+  const resp=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{
+      'content-type':'application/json',
+      'x-api-key':key,
+      'anthropic-version':'2023-06-01',
+      'anthropic-dangerous-direct-browser-access':'true'
+    },
+    body:JSON.stringify({model:'claude-opus-4-8',...body})
+  });
+  let data;try{data=await resp.json();}catch(e){throw new Error('Bad response ('+resp.status+')');}
+  if(!resp.ok||data.error)throw new Error((data.error&&data.error.message)||('AI request failed ('+resp.status+')'));
+  return data;
+}
+
+async function scanPhoto(){
+  if(!lastPhoto){toast('Take a photo first 📸');return;}
+  if(!(localStorage.getItem('wte_key')||'').trim()){
+    openSettings();
+    toast('Add your Claude API key to scan photos — or type ingredients by hand below.');
+    return;
+  }
+  const st=document.getElementById('scan-status');st.classList.add('show');
+  try{
+    const b64=lastPhoto.split(',')[1];
+    const d=await claude({max_tokens:300,messages:[{role:'user',content:[
+      {type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}},
+      {type:'text',text:'List all food ingredients visible in this photo. Reply ONLY with a JSON array of lowercase strings like ["eggs","milk"]. No other text.'}
+    ]}]});
+    const raw=(d.content||[]).map(b=>b.text||'').join('');
+    const mx=raw.match(/\[[\s\S]*?\]/);
+    const found=mx?JSON.parse(mx[0]):[];
+    let added=0;
+    found.forEach(x=>{const c=String(x).trim().toLowerCase();
+      if(c&&!S.fridge.map(y=>y.toLowerCase()).includes(c)){S.fridge.push(c);added++;}});
+    save();renderFridge();
+    toast(added?('✨ Claude spotted '+added+' ingredient'+(added===1?'':'s')+'!'):'No new ingredients spotted — add some by hand?');
+    if(added)snapIdeas();
+  }catch(err){
+    toast(err.message==='no-key'?'Add your API key in ⚙️ first':'Scan failed — '+err.message);
+  }finally{st.classList.remove('show');}
+}
+
+/* fridge chips */
+function renderFridge(){
+  document.getElementById('fridge-chips').innerHTML=
+    S.fridge.length?S.fridge.map(i=>`<div class="chip"><span>${esc(i)}</span><button class="chipx" onclick="rmFridge('${esc(i).replace(/'/g,"\\'")}')">×</button></div>`).join('')
+    :'<span style="font-size:.8rem;color:var(--muted)">Nothing yet — snap a photo or add by hand.</span>';
+}
+function addFridge(){
+  const el=document.getElementById('fridge-in');const v=el.value.trim().toLowerCase();
+  if(!v)return;
+  if(S.fridge.map(x=>x.toLowerCase()).includes(v)){toast(v+' is already in the list');el.value='';return;}
+  S.fridge.push(v);save();renderFridge();el.value='';
+}
+function rmFridge(i){S.fridge=S.fridge.filter(x=>x!==i);save();renderFridge();}
+function clearFridge(){S.fridge=[];save();renderFridge();document.getElementById('snap-results').innerHTML='';}
+
+function snapIdeas(){
+  if(!S.fridge.length){toast('Add some ingredients first 🧺');return;}
+  const list=rank({ingredients:S.fridge}).slice(0,3);
+  document.getElementById('snap-results').innerHTML=
+    `<div class="sec-lbl">🍳 You could make…</div>`+miniList(list);
+}
+
+/* ============================================================
+   ASK — moods, allergies, cravings
+   ============================================================ */
+function renderMoods(){
+  document.getElementById('mood-row').innerHTML=MOODS.map(([id,label])=>
+    `<button class="chip ${S.mood===id?'on':''}" onclick="setMood('${id}')">${label}</button>`).join('');
+}
+function setMood(id){S.mood=S.mood===id?null:id;save();renderMoods();askFromState();}
+function renderAllergies(){
+  document.getElementById('allergy-row').innerHTML=ALLERGENS.map(a=>
+    `<button class="chip ${S.allergies.includes(a)?'on':''}" onclick="toggleAllergy('${a}')">${a}</button>`).join('');
+}
+function toggleAllergy(a){
+  S.allergies=S.allergies.includes(a)?S.allergies.filter(x=>x!==a):[...S.allergies,a];
+  save();renderAllergies();askFromState();
+}
+function askFromState(){
+  if(!S.mood&&!S.allergies.length){document.getElementById('ask-results').innerHTML='';return;}
+  const moodLabel=S.mood?(MOODS.find(m=>m[0]===S.mood)||[])[1]:null;
+  document.getElementById('whisky-reply').textContent=moodLabel?`Feeling ${moodLabel.split(' ')[1]?moodLabel.slice(moodLabel.indexOf(' ')+1).toLowerCase():S.mood}? Try one of these!`:'Here are some safe picks for you!';
+  document.getElementById('ask-results').innerHTML=miniList(rank({}).slice(0,3));
+}
+function runAsk(){
+  const text=document.getElementById('ask-in').value.trim();
+  if(!text){askFromState();return;}
+  const{o,reply}=parseWish(text);
+  document.getElementById('whisky-reply').textContent=reply;
+  const list=rank(o).slice(0,3);
+  document.getElementById('ask-results').innerHTML=list.length?miniList(list)
+    :'<p style="font-size:.85rem;color:var(--muted)">Nothing fits those filters — try removing an allergy?</p>';
+}
+function miniList(list){
+  return '<div class="mini-list">'+list.map(({r})=>
+    `<div class="mini" onclick="openRecipe('${r.id}')">
+       <span class="e">${r.emoji}</span>
+       <div class="t">${esc(r.title)}<div class="m">${r.mins} min · ${r.kind}</div></div>
+       <span style="font-size:.8rem;color:var(--blue);font-weight:700">view →</span>
+     </div>`).join('')+'</div>';
+}
+
+/* ============================================================
+   RECIPES — grid with ingredient search
+   ============================================================ */
+function renderRecipes(){
+  const q=(document.getElementById('recipe-search').value||'').trim().toLowerCase();
+  const terms=q.split(/[\s,]+/).filter(Boolean);
+  const list=RECIPES.filter(r=>!terms.length||terms.every(t=>r.search.includes(t)));
+  document.getElementById('recipe-grid').innerHTML=list.length?list.map(r=>`
+    <div class="recipe" onclick="openRecipe('${r.id}')">
+      <div class="thumb">${r.emoji}</div>
+      <div class="body">
+        <h3>${esc(r.title)}</h3>
+        <div class="meta"><span class="badge">${r.kind}</span><span>${r.mins} min</span></div>
+      </div>
+    </div>`).join('')
+    :'<p style="grid-column:1/-1;color:var(--muted);font-size:.9rem">No recipes match "'+esc(q)+'" — try another ingredient.</p>';
+}
+
+/* recipe detail modal */
+let openRecipeId=null;
+function openRecipe(id){
+  const r=RECIPES.find(x=>x.id===id);if(!r)return;
+  openRecipeId=id;
+  document.getElementById('rm-emoji').textContent=r.emoji;
+  document.getElementById('rm-title').textContent=r.title;
+  document.getElementById('rm-meta').textContent=r.mins+' min · '+(r.kind==='bake'?'baking':'cooking');
+  const why=[];
+  if(S.mood&&r.moods.includes(S.mood))why.push('a great match for your mood');
+  if(r.temp==='cold')why.push('nice and cool');
+  if(r.temp==='warm')why.push('warm and cozy');
+  const using=S.fridge.filter(f=>r.ingredients.some(x=>x.includes(f)||f.includes(x)));
+  if(using.length)why.push('uses your '+using.slice(0,3).join(', '));
+  document.getElementById('rm-why').textContent=why.length?'✨ '+why.join(' · '):'✨ A yummy choice!';
+  document.getElementById('rm-ings').innerHTML=r.ingredients.map(i=>'<li>'+esc(i)+'</li>').join('');
+  document.getElementById('rm-tags').innerHTML=r.tags.map(t=>'<span class="chip" style="font-size:.7rem;padding:.25rem .6rem">'+esc(t)+'</span>').join('');
+  openModalId('recipe-modal');
+}
+function addRecipeToPlan(){
+  const r=RECIPES.find(x=>x.id===openRecipeId);if(!r)return;
+  closeModal('recipe-modal');closeModal('wheel-modal');
+  prefillPlan(r);
+}
+
+/* ============================================================
+   FAMILY
+   ============================================================ */
+function renderFamily(){
+  document.getElementById('people-grid').innerHTML=PEOPLE.map((p,i)=>{
+    const picks=rank({likes:p.likes,avoid:p.avoid}).slice(0,2);
+    return `<div class="person" id="person-${i}" onclick="this.classList.toggle('open')">
+      <div class="top">
+        <div class="avatar-lg">${p.emoji}</div>
+        <div><h3>${esc(p.name)}</h3><div class="desc">${esc(p.desc)}</div></div>
+      </div>
+      <div class="tags">${p.likes.slice(0,4).map(t=>'<span>'+esc(t)+'</span>').join('')}</div>
+      <div class="hint">tap for ${esc(p.name)}'s picks ↓</div>
+      <div class="picks">${picks.map(({r})=>
+        `<div class="mini" onclick="event.stopPropagation();openRecipe('${r.id}')">
+          <span class="e">${r.emoji}</span><div class="t">${esc(r.title)}<div class="m">${r.mins} min</div></div>
+        </div>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ============================================================
+   SPIN WHEEL (modal)
+   ============================================================ */
+const WHEEL_COLORS=['#A94FA4','#C77BC2','#E3A8DF','#B58BD9','#D9A8E3','#C77BB0','#E3A8C8','#B05FA8'];
+let wheelPick=null,spinning=false;
+function drawWheel(){
+  const svg=document.getElementById('wheel');
+  const n=RECIPES.length,step=Math.PI*2/n;let h='';
+  for(let i=0;i<n;i++){
+    const a0=i*step-Math.PI/2,a1=a0+step;
+    const x0=Math.cos(a0)*100,y0=Math.sin(a0)*100,x1=Math.cos(a1)*100,y1=Math.sin(a1)*100;
+    h+=`<path d="M0,0 L${x0.toFixed(2)},${y0.toFixed(2)} A100,100 0 0,1 ${x1.toFixed(2)},${y1.toFixed(2)} Z" fill="${WHEEL_COLORS[i%WHEEL_COLORS.length]}" stroke="#fff" stroke-width="1.4"/>`;
+    const am=a0+step/2,lx=Math.cos(am)*72,ly=Math.sin(am)*72;
+    h+=`<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="middle" dominant-baseline="central" font-size="14">${RECIPES[i].emoji}</text>`;
+  }
+  svg.innerHTML=h;
+}
+function openWheel(){
+  unlockAudio();
+  document.getElementById('wheelResult').classList.remove('show');
+  openModalId('wheel-modal');
+}
+function spinWheel(){
+  if(spinning)return;
+  const eligible=rank({});
+  if(!eligible.length){toast('Nothing matches those allergies — remove one in Ask.');return;}
+  spinning=true;
+  document.getElementById('wheelResult').classList.remove('show');
+  const pool=eligible.slice(0,Math.min(4,eligible.length));
+  wheelPick=pool[Math.floor(Math.random()*pool.length)].r;
+  const idx=RECIPES.findIndex(r=>r.id===wheelPick.id);
+  const sa=360/RECIPES.length;
+  const finalAngle=5*360-(idx*sa+sa/2);
+  const svg=document.getElementById('wheel');
+  svg.style.transform=`rotate(${finalAngle}deg)`;
+  setTimeout(()=>{
+    const eq=finalAngle%360;
+    svg.style.transition='none';svg.style.transform=`rotate(${eq}deg)`;
+    setTimeout(()=>{svg.style.transition='';},20);
+    document.getElementById('wr-emoji').textContent=wheelPick.emoji;
+    document.getElementById('wr-title').textContent=wheelPick.title;
+    document.getElementById('wr-meta').textContent=wheelPick.mins+' min · '+wheelPick.tags.slice(0,3).join(' · ');
+    document.getElementById('wheelResult').classList.add('show');
+    spinning=false;
+  },3050);
+}
+function wheelToPlan(){if(wheelPick){closeModal('wheel-modal');prefillPlan(wheelPick);}}
+function wheelDetails(){if(wheelPick){openRecipe(wheelPick.id);}}
+
+/* ============================================================
+   SETTINGS — Claude API key (this browser only)
+   ============================================================ */
+function openSettings(){
+  const key=localStorage.getItem('wte_key')||'';
+  document.getElementById('key-in').value=key;
+  document.getElementById('key-status').textContent=key?'✓ A key is saved on this device.':'No key saved yet — photo scanning is off.';
+  openModalId('settings-modal');
+}
+function saveKey(){
+  const v=document.getElementById('key-in').value.trim();
+  if(!v){toast('Paste a key first');return;}
+  localStorage.setItem('wte_key',v);
+  document.getElementById('key-status').textContent='✓ Key saved on this device.';
+  toast('Key saved — 📸 scanning is on!');
+}
+function clearKey(){
+  localStorage.removeItem('wte_key');
+  document.getElementById('key-in').value='';
+  document.getElementById('key-status').textContent='Key removed.';
+}
+
+/* ─── INIT ─── */
+drawWheel();
+checkAlarms();
+</script>
+</body>
+</html>
